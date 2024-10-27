@@ -1,0 +1,12 @@
+numpy
+pandas
+scikit-learn
+python-Levenshtein
+tensorflow
+tensorflow-hub
+seaborn
+matplotlib
+Flask
+flask-ngrok
+pyngrok
+pytest
