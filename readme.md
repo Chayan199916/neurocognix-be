@@ -75,9 +75,12 @@ Response time analysis uses Exponential Moving Average (EMA) for smoothing and a
 
 ### 🎮 API Endpoints
 
-Endpoint Method Description
-/start-game POST Initializes a new game session with player profile.
-/submit-answer POST Processes player answers and returns performance metrics.
-/generate-sequence GET Generates a new word sequence based on current game state.
-/player-stats GET Returns player performance statistics.
-/leaderboard GET Retrieves global leaderboard data.
+This table describes the available API endpoints for this project.
+
+| Endpoint           | Method | Description                                                |
+| ------------------ | ------ | ---------------------------------------------------------- |
+| /start-game        | POST   | Initializes a new game session with player profile.        |
+| /submit-answer     | POST   | Processes player answers and returns performance metrics.  |
+| /generate-sequence | GET    | Generates a new word sequence based on current game state. |
+| /player-stats      | GET    | Returns player performance statistics.                     |
+| /leaderboard       | GET    | Retrieves global leaderboard data.                         |
