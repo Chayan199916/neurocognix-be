@@ -102,17 +102,17 @@ Purpose: Manages game-specific configuration parameters
 
 ```python
 Constants:
-- MIN_DIFFICULTY = 3
-- MAX_DIFFICULTY = 10
-- BASE_TIME_PER_WORD = 1.0
-- TRANSITION_TIME = 0.5
-- SEMANTIC_THRESHOLD = 0.7
-- EMA_ALPHA = 0.2
-- DIFFICULTY_INCREASE_THRESHOLD = 1.2
-- DIFFICULTY_DECREASE_THRESHOLD = 0.8
-- COGNITIVE_LOAD_INCREMENT = 0.05
-- FATIGUE_INCREMENT = 0.025
-- MAX_CONSECUTIVE_FAILURES = 3
+- `MIN_DIFFICULTY`: Minimum difficulty level (3)
+- `MAX_DIFFICULTY`: Maximum difficulty level (10)
+- `BASE_TIME_PER_WORD`: Base time allowed per word (1.0 seconds)
+- `TRANSITION_TIME`: Time between sequences (0.5 seconds)
+- `SEMANTIC_THRESHOLD`: Threshold for semantic similarity (0.7)
+- `EMA_ALPHA`: Exponential Moving Average smoothing factor (0.2)
+- `DIFFICULTY_INCREASE_THRESHOLD`: Performance threshold for increasing difficulty (1.2)
+- `DIFFICULTY_DECREASE_THRESHOLD`: Performance threshold for decreasing difficulty (0.8)
+- `COGNITIVE_LOAD_INCREMENT`: Rate of cognitive load increase (0.05)
+- `FATIGUE_INCREMENT`: Rate of fatigue increase (0.025)
+- `MAX_CONSECUTIVE_FAILURES`: Maximum allowed consecutive failures (3)
 ```
 
 ### 2. Core Classes
@@ -130,11 +130,12 @@ Methods:
 
 - `calculate_complexity(word: str) -> float`
   - Formula: `0.4 * (syllables/4) + 0.3 * (length/10) + 0.3 * (unique_letters/10)`
+  - Weights: Syllables (40%), Length (30%), Unique letters (30%)
   - Returns normalized complexity score between 0.2 and 1.0
 
 #### `AdaptiveTimeManager`
 
-Purpose: Manages response time expectations and tracking
+Purpose: Manages response time expectations and adaptations.
 
 Methods:
 
@@ -149,22 +150,28 @@ Methods:
     - Cognitive load factor (20% impact)
     - Fatigue factor (15% impact)
     - Historical performance (±20% adjustment)
+  - Formula: `base_time * cognitive_factor * fatigue_factor * performance_factor`
+  - Where:
+    - `base_time = sequence_length * BASE_TIME_PER_WORD`
+    - `cognitive_factor = 1 + (cognitive_load * 0.2)`
+    - `fatigue_factor = 1 + (fatigue * 0.15)`
+    - `performance_factor = min(1.5, max(0.8, ema_response_time/base_time))`
 
 #### `DifficultyManager`
 
-Purpose: Manages game difficulty adaptation
+Purpose: Manages dynamic difficulty adjustment.
 
 Methods:
 
 - `adjust_difficulty(recent_score: int, target_score: int) -> str`
-  - Uses 3-round moving average for stability
-  - Increases difficulty if performance > 120% of target
+  - Uses rolling average of last 3 scores
+  - Increases difficulty if avg_score > target_score \* 1.2
   - Decreases difficulty after 3 consecutive poor performances
   - Maintains bounds between MIN_DIFFICULTY and MAX_DIFFICULTY
 
 #### `ProfileManager`
 
-Purpose: Manages player profiles and customization
+Purpose: Manages user profiles and difficulty adjustments.
 
 Constants:
 
@@ -193,23 +200,83 @@ Key Components:
 
    ```python
    final_score = base_score + time_bonus - cognitive_penalty - fatigue_penalty
-   where:
-   - base_score = difficulty * 10
-   - time_bonus = up to 50% of base_score
-   - cognitive_penalty = up to 30% reduction
-   - fatigue_penalty = up to 20% reduction
+   Where:
    ```
 
+- base_score = difficulty_level \* 10
+- time*bonus = base_score * 0.5 \_ (expected_time - response_time)/expected_time
+- cognitive*penalty = base_score * (cognitive*load * 0.3)
+- fatigue*penalty = base_score * (fatigue*factor * 0.2)
+
+````
+Bounds:
+- Minimum score: 20% of base_score
+- Maximum score: 200% of base_score
+
 2. Word Similarity Checking
-
-   - Exact match
-   - Levenshtein distance for typos (≤1)
-   - Semantic similarity using Universal Sentence Encoder
-
+ Methods:
+ 1. Exact match
+ 2. Levenshtein distance (≤ 1 for typos)
+ 3. Semantic similarity using Universal Sentence Encoder
+- Cosine similarity formula: `cos(θ) = (A·B)/(||A||·||B||)`
+- Threshold: 0.7 (configurable)
 3. Cognitive State Management
-   - Incremental increase in cognitive load
-   - Fatigue accumulation over time
-   - Dynamic difficulty adjustment
+- Incremental increase in cognitive load
+- Fatigue accumulation over time
+- Dynamic difficulty adjustment
+Updated after each sequence:
+```python
+cognitive_load = min(1.0, cognitive_load + COGNITIVE_LOAD_INCREMENT)
+fatigue_factor = min(1.0, fatigue_factor + FATIGUE_INCREMENT)
+````
+
+### 4. Data Structures
+
+#### Word Categories
+
+Organized by themes:
+
+- fruits
+- colors
+- animals
+- professions
+- countries
+- household_items
+- body_parts
+- vehicles
+- emotions
+
+Each category contains 18 carefully selected words with varying complexity levels.
+
+### 5. Machine Learning Components
+
+#### Universal Sentence Encoder
+
+- Purpose: Semantic similarity analysis
+- Model URL: "https://tfhub.dev/google/universal-sentence-encoder/4"
+- Output: 512-dimensional embeddings
+- Used for: Advanced word similarity checking
+
+## Performance Optimization
+
+### Time Complexity
+
+- Word similarity checking: O(1) for exact match, O(n) for Levenshtein
+- Sequence generation: O(n log n) due to sorting by complexity
+- Score calculation: O(1)
+
+### Space Complexity
+
+- Word categories: O(n) where n is total number of words
+- Player history: O(m) where m is number of played rounds
+- Embeddings cache: O(k) where k is number of unique words used
+
+## Error Handling
+
+- Graceful fallback for pronunciation dictionary
+- Bounded score calculations
+- Protected against division by zero in time calculations
+- Input validation for all user inputs
 
 Methods:
 
@@ -285,3 +352,11 @@ Methods:
    - CORS configuration
    - Error message safety
    - Rate limiting considerations
+
+## Future Enhancements
+
+1. Additional word categories
+2. Multi-language support
+3. Persistent user profiles
+4. Advanced analytics dashboard
+5. Multiplayer mode
