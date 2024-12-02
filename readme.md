@@ -204,31 +204,33 @@ Key Components:
    ```
 
 - base_score = difficulty_level \* 10
-- time*bonus = base_score * 0.5 \_ (expected_time - response_time)/expected_time
+- time_bonus = base_score \* 0.5 \_ (expected_time - response_time)/expected_time
 - cognitive*penalty = base_score * (cognitive*load * 0.3)
 - fatigue*penalty = base_score * (fatigue*factor * 0.2)
 
-````
 Bounds:
+
 - Minimum score: 20% of base_score
 - Maximum score: 200% of base_score
 
 2. Word Similarity Checking
- Methods:
- 1. Exact match
- 2. Levenshtein distance (≤ 1 for typos)
- 3. Semantic similarity using Universal Sentence Encoder
+
+Methods: 1. Exact match 2. Levenshtein distance (≤ 1 for typos) 3. Semantic similarity using Universal Sentence Encoder
+
 - Cosine similarity formula: `cos(θ) = (A·B)/(||A||·||B||)`
 - Threshold: 0.7 (configurable)
+
 3. Cognitive State Management
-- Incremental increase in cognitive load
-- Fatigue accumulation over time
-- Dynamic difficulty adjustment
+   - Incremental increase in cognitive load
+   - Fatigue accumulation over time
+   - Dynamic difficulty adjustment
+
 Updated after each sequence:
+
 ```python
 cognitive_load = min(1.0, cognitive_load + COGNITIVE_LOAD_INCREMENT)
 fatigue_factor = min(1.0, fatigue_factor + FATIGUE_INCREMENT)
-````
+```
 
 ### 4. Data Structures
 
@@ -360,3 +362,7 @@ Methods:
 3. Persistent user profiles
 4. Advanced analytics dashboard
 5. Multiplayer mode
+
+```
+
+```
